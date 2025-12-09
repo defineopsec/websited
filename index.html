@@ -1,718 +1,1407 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>C2C Interface</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        /* CSS: Ethereal Dark Theme - Deep, Animated Glow for Professional Web3 Look */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Rainbet Exchange</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  :root {
+    /* Rainbet Farbpalette */
+    --bg-dark: #0A0E1E;
+    --bg-main: #191F3B;
+    --bg-card: #1B213C;
+    --bg-sidebar: #1B213C;
+    --bg-button: #212747;
+    --bg-button-hover: #2A2F52;
+    --bg-input: #262C50;
+    
+    /* Akzentfarben */
+    --accent-blue: #0077DB;
+    --accent-blue-light: #1F99FF;
+    --accent-blue-dark: #006CC7;
+    --accent-gradient: linear-gradient(90deg, #0077DB, #1F99FF);
+    --accent-green: #13BD9B;
+    --accent-purple: #5E679E;
+    
+    /* Textfarben */
+    --text-primary: #E8E5FF;
+    --text-secondary: #7D7E97;
+    --text-muted: #8B93B5;
+    --text-light: #FFFFFF;
+    
+    /* Border/Overlay */
+    --border-color: rgba(232, 229, 255, 0.05);
+    --border-light: rgba(232, 229, 255, 0.1);
+    --overlay: rgba(255, 255, 255, 0.03);
+    
+    /* Effekte */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.35);
+    --glow-blue: 0 0 20px rgba(31, 153, 255, 0.15);
+    
+    /* Border Radius */
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 10px;
+    --radius-xl: 12px;
+    --radius-full: 9999px;
+  }
 
-        :root {
-            /* Palette - Deep Blue/Cyan Focus */
-            --primary: #00bfff; /* Deep Sky Blue - Core Accent */
-            --accent: #1e90ff; /* Dodge Blue - Hover/Glow */
-            --bg-dark: #070a10; /* Ultra Dark Background */
-            --card-bg: rgba(15, 20, 30, 0.97); /* Near opaque card */
-            --text-light: #e0f0ff;
-            --text-subtle: #89a7c3;
-            --input-bg: #10151f;
-            --border-glow: rgba(0, 191, 255, 0.25);
-            --success: #32cd32; /* Lime Green for Success */
-            --warning: #ffb700;
-            --error: #ff4500; /* Orange Red */
-            --transition-duration: 0.35s;
-        }
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
 
-        /* --- GLOBAL SETUP --- */
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-dark);
-            background-image: 
-                radial-gradient(circle at 10% 90%, rgba(0, 191, 255, 0.1), transparent 70%),
-                radial-gradient(circle at 90% 10%, rgba(30, 144, 255, 0.1), transparent 70%);
-            background-attachment: fixed;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            color: var(--text-light);
-            padding: 20px;
-            box-sizing: border-box;
-            overflow-x: hidden;
-            animation: subtle-shift 60s infinite alternate linear;
-        }
+  body {
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
 
-        @keyframes subtle-shift {
-            from { background-position: 0% 0%; }
-            to { background-position: 100% 100%; }
-        }
+  /* Layout */
+  .layout {
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    gap: 20px;
+    min-height: 100vh;
+    padding: 0;
+    background: var(--bg-dark);
+  }
 
-        .swap-container {
-            background: var(--card-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-radius: 20px;
-            padding: 45px;
-            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.8), 0 0 25px var(--border-glow);
-            width: 100%;
-            max-width: 560px;
-            position: relative;
-            border: 2px solid var(--border-glow);
-            transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        }
+  @media (max-width: 1100px) {
+    .layout {
+      grid-template-columns: 1fr;
+      padding: 0;
+    }
+    .sidebar {
+      display: none;
+    }
+  }
 
-        /* --- CENTRAL WATERMARK (TUFF) --- */
-        .watermark {
-            position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translate(-50%, -180%);
-            color: var(--primary);
-            font-family: 'Space Mono', monospace;
-            font-size: 1.3em;
-            font-weight: 700;
-            letter-spacing: 0.15em;
-            text-shadow: 0 0 12px var(--primary), 0 0 20px var(--accent);
-            opacity: 1;
-            padding: 5px 15px;
-            pointer-events: none;
-        }
-        
-        /* --- FEE SLOGAN (PROMINENT) --- */
-        .fee-slogan {
-            text-align: center;
-            color: var(--success);
-            font-family: 'Space Mono', monospace;
-            font-size: 0.9em;
-            font-weight: 700;
-            margin-bottom: 5px;
-            letter-spacing: 0.1em;
-            text-shadow: 0 0 8px rgba(50, 205, 50, 0.6);
-            padding-bottom: 20px;
-            border-bottom: 1px solid rgba(50, 205, 50, 0.2);
-        }
+  /* SIDEBAR - Rainbet Style */
+  .sidebar {
+    background: var(--bg-sidebar);
+    border-right: 1px solid var(--border-color);
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    overflow-y: auto;
+    padding: 20px 0;
+  }
 
-        /* --- TYPOGRAPHY & HEADINGS --- */
-        h2 {
-            text-align: center;
-            color: var(--text-light);
-            margin-bottom: 35px;
-            margin-top: 25px; 
-            font-size: 1.8em;
-            font-weight: 800;
-            letter-spacing: -0.05em;
-        }
+  .brand {
+    padding: 0 20px 20px;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 20px;
+  }
 
-        .input-group { 
-            margin-bottom: 20px; 
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: var(--text-subtle);
-            font-size: 0.8em;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-        }
+  .logo-link {
+    display: block;
+    width: 200px;
+    height: 40px;
+    overflow: hidden;
+  }
 
-        /* --- INPUTS & SELECTS (Deep Professional Look) --- */
-        select, input[type="text"], input[type="number"] {
-            width: 100%;
-            padding: 16px;
-            border: 1px solid rgba(0, 191, 255, 0.1);
-            border-radius: 10px;
-            box-sizing: border-box;
-            font-size: 1.1em;
-            background-color: var(--input-bg);
-            color: var(--text-light);
-            transition: all var(--transition-duration) ease;
-            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
-        }
+  .logo-link img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: brightness(1.1);
+  }
 
-        select:focus, input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(0, 191, 255, 0.3), inset 0 2px 5px rgba(0, 0, 0, 0.8);
-            outline: none;
-        }
-        
-        /* --- SWAP BUTTON (PERFECT ZENTRIERUNG) --- */
-        .swap-divider {
-            /* Hält den Platz frei */
-            height: 40px; 
-            position: relative;
-            margin: 10px 0 20px 0; 
-        }
-        
-        .swap-icon-container {
-            /* Perfekte Zentrierung: Mitte des Dividers */
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%); 
-            z-index: 10;
-        }
-        
-        .swap-icon-button {
-            background: var(--primary);
-            color: var(--bg-dark);
-            border: 5px solid var(--card-bg);
-            border-radius: 50%;
-            width: 55px;
-            height: 55px;
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            box-shadow: 0 0 15px var(--primary);
-            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-        }
-        .swap-icon-button:hover {
-            background: var(--accent);
-            box-shadow: 0 0 25px var(--accent), 0 0 40px rgba(30, 144, 255, 0.5);
-            transform: scale(1.1) rotate(180deg);
-        }
-        
-        /* --- RATE SUMMARY (VIBRANT) --- */
-        .rate-summary {
-            text-align: center;
-            margin: 30px 0;
-            padding: 25px;
-            border-radius: 12px;
-            background: rgba(0, 191, 255, 0.15); 
-            border: 1px solid rgba(0, 191, 255, 0.4);
-            box-shadow: 0 0 12px rgba(0, 191, 255, 0.3);
-        }
+  .nav {
+    padding: 0 15px;
+  }
 
-        .rate-summary span {
-            font-size: 0.9em;
-            color: var(--text-subtle);
-            display: block;
-        }
+  .nav a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 13px;
+    border-radius: var(--radius-md);
+    margin-bottom: 4px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+  }
 
-        .rate-summary strong {
-            color: var(--success);
-            font-family: 'Space Mono', monospace;
-            font-size: 2.2em;
-            font-weight: 700;
-            display: block;
-            margin-top: 5px;
-            text-shadow: 0 0 10px rgba(50, 205, 50, 0.8);
-        }
+  .nav a:hover {
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text-primary);
+    border-color: var(--border-light);
+  }
 
-        .loading-text {
-            color: var(--warning);
-            font-weight: 600;
-            display: none;
-            margin-top: 8px;
-            font-size: 0.8em;
-        }
+  .nav a i {
+    width: 18px;
+    text-align: center;
+    font-size: 16px;
+  }
 
-        /* --- PRIMARY BUTTON (POWERFUL) --- */
-        .swap-button {
-            width: 100%;
-            padding: 18px;
-            background: var(--primary);
-            color: var(--bg-dark);
-            border: none;
-            border-radius: 10px;
-            font-size: 1.2em;
-            font-weight: 800;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            margin-top: 35px;
-            box-shadow: 0 6px 20px rgba(0, 191, 255, 0.5);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
+  .small {
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 20px 20px 8px;
+    margin-top: 10px;
+  }
 
-        .swap-button:hover:not(:disabled) {
-            background: var(--accent);
-            transform: translateY(-3px);
-            box-shadow: 0 8px 30px rgba(30, 144, 255, 0.7);
-        }
-        .swap-button:disabled {
-            background: #202b3d;
-            color: #6c7e92;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-        
-        /* Loading Spinner */
-        .swap-button.loading .spinner {
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-top: 3px solid var(--text-light);
-            border-radius: 50%;
-            width: 18px;
-            height: 18px;
-            animation: spin 1s linear infinite;
-            display: inline-block;
-            margin-left: 10px;
-            vertical-align: middle;
-        }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
+  /* Recent Swaps */
+  .swap-list-item {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 13px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
 
-        /* --- STEP TRANSITION --- */
-        .step {
-            transition: opacity 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            position: relative;
-        }
-        .step-out { opacity: 0; transform: translateY(30px); }
-        .step-in { opacity: 1; transform: translateY(0); }
+  .swap-list-item.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
 
+  .swap-list-item .amount {
+    color: var(--accent-blue-light);
+    font-weight: 600;
+    font-family: 'Inter', monospace;
+  }
 
-        /* --- DEPOSIT STEP --- */
-        #deposit_info {
-            background: var(--input-bg);
-            padding: 30px;
-            border-radius: 15px;
-            border: 1px solid var(--success);
-            text-align: center;
-            box-shadow: 0 0 15px rgba(50, 205, 50, 0.4);
-        }
+  /* Swaps Animation Container */
+  .swaps-animation-container {
+    height: 180px;
+    overflow: hidden;
+    position: relative;
+  }
 
-        #deposit_info h3 {
-            color: var(--success);
-            margin-bottom: 20px;
-            font-size: 1.6em;
-            font-weight: 700;
-        }
+  .swaps-inner-container {
+    position: absolute;
+    width: 100%;
+    transition: transform 0.8s ease;
+  }
 
-        .address-box {
-            background-color: var(--bg-dark);
-            padding: 22px;
-            border-radius: 10px;
-            margin: 15px 0;
-            word-break: break-all;
-            font-family: 'Space Mono', monospace;
-            font-size: 1.0em;
-            color: var(--primary);
-            border: 1px dashed var(--primary);
-            font-weight: 700;
-            cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s;
-        }
-        .address-box:hover { background-color: rgba(0, 191, 255, 0.05); }
-        .address-box:active { transform: scale(0.99); }
+  /* MAIN CONTENT */
+  .main {
+    padding: 20px;
+    background: var(--bg-dark);
+  }
 
-        #transaction_status {
-            margin-top: 25px;
-            padding: 18px;
-            border-radius: 10px;
-            background: var(--bg-dark);
-            border-left: 5px solid var(--primary);
-            font-weight: 600;
-        }
+  /* Topbar */
+  .topbar {
+    background: var(--bg-main);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    padding: 12px 20px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--shadow-sm);
+  }
 
-        /* --- RESPONSIVE ADJUSTMENTS --- */
-        @media (max-width: 600px) {
-            .swap-container {
-                padding: 20px;
-                border-radius: 0;
-                box-shadow: none;
-                border: none;
-                max-width: 100%;
-            }
-            body { padding: 0; align-items: flex-start; }
-            .watermark { font-size: 1.1em; transform: translate(-50%, -150%); }
-            h2 { margin-top: 30px; font-size: 1.5em; margin-bottom: 25px; }
-            .swap-button { padding: 16px; font-size: 1.1em; }
-        }
-    </style>
+  .top-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .top-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .btn-primary {
+    background: var(--accent-gradient);
+    color: white;
+    border-color: var(--accent-blue-light);
+  }
+
+  .btn-primary:hover {
+    background: linear-gradient(90deg, var(--accent-blue-dark), #52B0FF);
+    border-color: #52B0FF;
+    transform: translateY(-1px);
+    box-shadow: var(--glow-blue);
+  }
+
+  .btn-ghost {
+    background: var(--bg-button);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+  }
+
+  .btn-ghost:hover {
+    background: var(--bg-button-hover);
+    border-color: rgba(232, 229, 255, 0.1);
+  }
+
+  .btn-icon {
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  /* Hero Section */
+  .hero {
+    background: var(--bg-main);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-md);
+  }
+
+  .hero h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    background: linear-gradient(90deg, #E8E5FF, #A6D6FF);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .hero p {
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+
+  /* Swap Container */
+  .swap-wrap {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 20px;
+  }
+
+  @media (max-width: 1100px) {
+    .swap-wrap {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Card */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    padding: 24px;
+    box-shadow: var(--shadow-md);
+  }
+
+  .card h2 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: var(--text-primary);
+  }
+
+  /* Form Elements */
+  .form-group {
+    margin-bottom: 16px;
+  }
+
+  label {
+    display: block;
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  select, input[type="number"], input[type="text"], input[type="email"] {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+
+  select:focus, input:focus {
+    outline: none;
+    border-color: var(--accent-blue-light);
+    box-shadow: 0 0 0 2px rgba(31, 153, 255, 0.1);
+  }
+
+  /* Grid */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  /* Swap Center Button */
+  .swap-center {
+    display: flex;
+    justify-content: center;
+    margin: 16px 0;
+  }
+
+  .swap-btn {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--accent-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    border: 4px solid var(--bg-card);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .swap-btn:hover {
+    transform: scale(1.08) rotate(180deg);
+    box-shadow: var(--glow-blue);
+  }
+
+  /* Rate Display */
+  .rate {
+    background: rgba(31, 153, 255, 0.05);
+    border: 1px solid rgba(31, 153, 255, 0.1);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    text-align: center;
+    margin-top: 20px;
+  }
+
+  .rate .big {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent-blue-light);
+    margin: 8px 0;
+    font-family: 'Inter', monospace;
+  }
+
+  /* Mini Cards */
+  .mini {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+
+  .mini h4 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+  }
+
+  /* Modal */
+  .modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 14, 30, 0.9);
+    z-index: 10000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .modal-content {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    padding: 24px;
+    max-width: 460px;
+    width: 100%;
+    box-shadow: var(--shadow-lg);
+    animation: modalIn 0.3s ease-out;
+  }
+
+  @keyframes modalIn {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Footer */
+  .disclaimer {
+    background: var(--bg-main);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    color: var(--text-secondary);
+    font-size: 12px;
+    text-align: center;
+    margin-top: 20px;
+  }
+
+  /* Footer Styles */
+  .footer {
+    background: var(--bg-main);
+    border-top: 1px solid var(--border-color);
+    margin-top: 40px;
+    padding: 40px 20px 20px;
+  }
+
+  .footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 40px;
+  }
+
+  .footer-section h3 {
+    color: var(--text-primary);
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .footer-links {
+    list-style: none;
+  }
+
+  .footer-links li {
+    margin-bottom: 12px;
+  }
+
+  .footer-links a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 14px;
+    transition: color 0.2s ease;
+  }
+
+  .footer-links a:hover {
+    color: var(--accent-blue-light);
+  }
+
+  .company-info {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+
+  .copyright {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 12px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+    margin-top: 40px;
+  }
+
+  /* Utility Classes */
+  .muted {
+    color: var(--text-secondary);
+    font-size: 13px;
+  }
+
+  .text-accent {
+    color: var(--accent-blue-light);
+  }
+
+  .bg-gradient {
+    background: var(--accent-gradient);
+  }
+
+  /* Loading Animation */
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  .loading {
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+</style>
 </head>
 <body>
 
-<div class="swap-container">
-    <div class="watermark">Hosted by @dead</div>
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="brand">
+      <a class="logo-link" href="https://rainbet.com" target="_blank" rel="noopener noreferrer" title="Go to rainbet.com">
+        <img src="https://media.discordapp.net/attachments/1447858042371833956/1448009324000444517/logo-removebg-preview.png?ex=6939b345&is=693861c5&hm=ad533ad3b67c39dd06f8f2a59ed2ce616b87cf3d7818085d59607c20eb1ddfac&=&format=webp&quality=lossless" alt="Rainbet Exchange Logo" />
+      </a>
+    </div>
+
+    <nav class="nav" aria-label="Hauptnavigation">
+      <a href="https://rainbet.com">
+        <i class="fa-solid fa-house"></i>
+        <span>Home</span>
+      </a>
+      <a href="https://rainbet.com/casino">
+        <i class="fa-solid fa-champagne-glasses"></i>
+        <span>Casino</span>
+      </a>
+      <a href="https://rainbet.com/sportsbook">
+        <i class="fa-solid fa-basketball-ball"></i>
+        <span>Sports</span>
+      </a>
+      <a href="https://rainbet.com/rewards">
+        <i class="fa-solid fa-gift"></i>
+        <span>Promotions</span>
+      </a>
+      <a href="https://rainbet.com/?modal=profile&tab=overview">
+        <i class="fa-solid fa-user"></i>
+        <span>Account</span>
+      </a>
+    </nav>
     
-    <div class="fee-slogan">
-        <i class="fas fa-bolt" style="color: var(--primary);"></i> CHEAPEST C2C PROVIDER, 0.25% FEES! <i class="fas fa-bolt" style="color: var(--primary);"></i>
+    <div class="small">Recent Swaps</div>
+    <div class="swaps-animation-container">
+      <div id="recent_swaps_list" class="swaps-inner-container">
+        <!-- Swaps werden hier dynamisch eingefügt -->
+      </div>
     </div>
     
-    <h2 id="step-title">1. Set Swap Details</h2>
+    <div class="small">Races & VIP</div>
+    <div style="padding: 8px 15px 0;">
+      <div class="mini">
+        <div style="font-weight: 700; color: var(--accent-green);">$25K</div>
+        <div class="muted">Daily Race • Live</div>
+      </div>
+      <div class="mini" style="margin-top: 8px;">
+        <div style="font-weight: 700; color: var(--accent-green);">$100K</div>
+        <div class="muted">Weekly Race • Live</div>
+      </div>
+    </div>
 
-    <div id="step_one" class="step step-in">
-        
-        <div class="input-group">
-            <label for="send_crypto">You Send</label>
+    <div style="padding: 20px 15px 0;">
+      <div class="disclaimer">
+        <strong style="color: var(--text-primary);">Rainbet Exchange</strong><br/>
+        Instant Crypto Trading
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="top-left">
+        <span class="muted">Welcome, Guest!</span>
+      </div>
+      
+      <div class="top-actions">
+        <a href="https://rainbet.com/contact-us" class="btn btn-ghost btn-icon" title="Support">
+          <i class="fa-regular fa-message"></i>
+        </a>
+        <a href="https://rainbet.com/settings" class="btn btn-ghost btn-icon" title="Settings">
+          <i class="fa-solid fa-gear"></i>
+        </a>
+        <a href="https://rainbet.com/?modal=auth&tab=register" class="btn btn-primary">
+          <i class="fa-solid fa-user"></i>
+          <span>Register</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <h1>Experience Swapping, without Boundaries!</h1>
+          <p class="muted">Instant crypto-to-crypto exchange with competitive rates</p>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="padding: 8px 16px; background: rgba(31, 153, 255, 0.1); border-radius: var(--radius-md); font-weight: 700; color: var(--accent-blue-light);">
+            RAINBET
+          </div>
+          <span class="muted">Official Exchange Platform</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Swap Section -->
+    <section class="swap-wrap">
+      <!-- Main Swap Card -->
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h2>Instant Crypto Swap</h2>
+          <div class="muted">Fee: <strong class="text-accent">0.25%</strong></div>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label for="send_crypto">You send</label>
             <select id="send_crypto"></select>
-        </div>
-
-        <div class="input-group">
-            <label for="send_amount">Amount to Send</label>
-            <input type="number" id="send_amount" placeholder="0.00" value="1.0" min="0.0001" step="any">
-        </div>
-
-        <div class="swap-divider">
-            <div class="swap-icon-container">
-                <div class="swap-icon-button" id="swap_currencies_button" onclick="swapCurrencies()">
-                    <i class="fas fa-arrow-right-arrow-left"></i>
-                </div>
-            </div>
-        </div>
-
-        <div class="input-group" style="margin-top: 5px;"> 
-            <label for="receive_crypto">You Receive</label>
+          </div>
+          <div class="form-group">
+            <label for="receive_crypto">You receive</label>
             <select id="receive_crypto"></select>
-        </div>
+          </div>
 
-        <div class="rate-summary">
-            <span>Estimated Receive:</span>
-            <strong><span id="estimated_receive">0.00</span> <span id="receive_symbol"></span></strong>
-            <div id="loading_indicator" class="loading-text">Fetching live rate...</div>
-        </div>
+          <div class="form-group" style="grid-column: 1 / -1;">
+            <label for="send_amount">Amount to send</label>
+            <input id="send_amount" type="number" min="0.0001" step="any" value="0.001" />
+          </div>
 
-        <div class="input-group">
-            <label for="receive_address">Your Recipient Address (for <span id="target_crypto_label"></span>)</label>
-            <input type="text" id="receive_address" placeholder="Paste your wallet address here">
-        </div>
-
-        <button class="swap-button" id="start_swap_button" onclick="showDepositStep()">Start Swap Now</button>
-    </div>
-
-    <div id="step_two" class="step" style="display:none;">
-        <div id="deposit_info">
-            <h3>Order Successfully Created</h3>
-
-            <p style="color: var(--text-subtle); margin-bottom: 20px;">Please send the amount to the following temporary deposit address:</p>
-
-            <div class="address-box" id="deposit_address_display" onclick="copyAddress()"></div>
-
-            <p style="font-size: 1.1em; color: var(--text-light); font-weight: 700; margin-top: 15px;">
-                Send Exactly: <span style="color: var(--success); font-size: 1.3em;"><span id="send_amount_final"></span> <span id="deposit_currency_final"></span></span>
-            </p>
-
-            <div id="transaction_status">
-                Status: <span id="status_message" style="color: var(--warning);">Waiting for deposit – No transaction detected yet</span>
+          <div style="grid-column: 1 / -1;" class="swap-center">
+            <div class="swap-btn" id="swap_btn" title="Swap currencies" onclick="swapCurrencies()">
+              <i class="fa-solid fa-arrow-right-arrow-left"></i>
             </div>
-            <button class="swap-button reset-button" onclick="resetSwap()">Start New Swap</button>
+          </div>
+
+          <div class="form-group" style="grid-column: 1 / -1;">
+            <label for="receive_address">Recipient address</label>
+            <input id="receive_address" type="text" placeholder="Paste your wallet address" />
+          </div>
         </div>
+
+        <div class="rate">
+          <div class="muted">Estimated receive</div>
+          <div class="big" id="estimated_receive">—</div>
+          <div class="muted" id="rate_detail">Live Rate</div>
+        </div>
+
+        <div style="display: flex; gap: 12px; margin-top: 20px;">
+          <button class="btn btn-primary" id="start_swap" onclick="createOrder()" style="flex: 1;">
+            Start Swap
+          </button>
+          <button class="btn btn-ghost" onclick="openPaypalModeSelection()">
+            <i class="fa-brands fa-paypal"></i>
+            <span>PayPal</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Right Sidebar -->
+      <aside class="right">
+        <div class="mini">
+          <h4>Recent Wins</h4>
+          <div class="muted">Players are winning now!</div>
+          <div style="margin-top: 12px; color: var(--accent-green); font-weight: 600;">
+            <i class="fa-solid fa-trophy"></i> $4,250 BTC won
+          </div>
+        </div>
+
+        <div class="mini">
+          <h4>Quick Stats</h4>
+          <div style="display: flex; gap: 20px; margin-top: 12px;">
+            <div>
+              <div style="font-weight: 700; color: var(--accent-blue-light);">1.2K</div>
+              <div class="muted">Active</div>
+            </div>
+            <div>
+              <div style="font-weight: 700; color: var(--accent-blue-light);">$48K</div>
+              <div class="muted">24h vol</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mini">
+          <h4>Support</h4>
+          <div class="muted">24/7 Live chat & email</div>
+          <button class="btn btn-ghost" style="width: 100%; margin-top: 12px;">
+            <i class="fa-regular fa-comment-dots"></i>
+            Start Chat
+          </button>
+        </div>
+
+        <div class="disclaimer">
+          <strong style="color: var(--text-primary);">Rainbet Exchange</strong><br/>
+          Copyright © 2025 Rainbet.com. All Rights Reserved.<br/>
+          <span style="font-size: 11px; opacity: 0.7;">Secure & Instant Trading</span>
+        </div>
+      </aside>
+    </section>
+  </main>
+</div>
+
+<!-- Footer Section -->
+<footer class="footer">
+  <div class="footer-container">
+    
+    <!-- Company Info -->
+    <div class="footer-section">
+      <h3>Rainbet Exchange</h3>
+      <div class="company-info">
+        Rainbet Exchange is a brand name of RBGAMING N.V.<br><br>
+        Company Address: Hamchako, Mustamudu,<br>
+        Autonomous Island of Anjouan Union of Comoros<br><br>
+        support@rainbet.com<br>
+        marketing@rainbet.com<br><br>
+        RAINBET EXCHANGE
+      </div>
     </div>
+
+    <!-- Navigation -->
+    <div class="footer-section">
+      <h3>Navigation</h3>
+      <ul class="footer-links">
+        <li><a href="https://rainbet.exchange">Exchange</a></li>
+        <li><a href="https://rainbet.com/">Markets</a></li>
+        <li><a href="https://rainbet.com/?modal=wallet&tab=deposit">Wallet</a></li>
+        <li><a href="https://rainbet.com/rewards">Rewards</a></li>
+        <li><a href="https://rainbet.com/rewards">Promotions</a></li>
+        <li><a href="https://rainbet.com/contact-us">Contact Us</a></li>
+      </ul>
+    </div>
+
+    <!-- Resources -->
+    <div class="footer-section">
+      <h3>Resources</h3>
+      <ul class="footer-links">
+        <li><a href="https://rainbet.com/responsible-gambling">Responsible Gambling</a></li>
+        <li><a href="https://rainbet.com/accessibility">Accessibility</a></li>
+        <li><a href="https://rainbet.com/code-of-ethics">Code of Ethics</a></li>
+        <li><a href="https://rainbet.com/modern-slavery-statement">Modern Slavery Statement</a></li>
+        <li><a href="https://rainbet.com/complaints-policy">Complaints Policy</a></li>
+        <li><a href="https://rainbet.com/privacy-policy">GDPR Compliance</a></li>
+      </ul>
+    </div>
+
+    <!-- Legal -->
+    <div class="footer-section">
+      <h3>Legal</h3>
+      <ul class="footer-links">
+        <li><a href="https://rainbet.com/aml">AML</a></li>
+        <li><a href="https://rainbet.com/sportsbook-rules">Trading Rules</a></li>
+        <li><a href="https://rainbet.com/cookie-policy">Cookie Policy</a></li>
+        <li><a href="https://rainbet.com/editorial-policy">Editorial Policy</a></li>
+        <li><a href="https://rainbet.com/disclaimer">Disclaimer</a></li>
+        <li><a href="https://rainbet.com/privacy-policy">Privacy Policy</a></li>
+        <li><a href="https://rainbet.com/terms">Terms of Service</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="copyright">
+    Copyright © 2025 Rainbet Exchange. All Rights Reserved.<br>
+    Rainbet Exchange - Instant Crypto Trading Platform
+  </div>
+</footer>
+
+<!-- PayPal Modal -->
+<div id="modal_paypal_select" class="modal">
+  <div class="modal-content">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <div style="font-weight: 700; color: var(--accent-blue-light); font-size: 18px;">PayPal Swap Mode</div>
+      <button onclick="closeModal('modal_paypal_select')" class="btn btn-ghost btn-icon">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div id="paypal_select_body" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+      <button class="btn btn-primary" style="padding: 20px; flex-direction: column;" onclick="openPaypalModal('crypto_to_paypal')">
+        <i class="fa-solid fa-arrow-right-from-bracket" style="transform: rotate(45deg); margin-bottom: 8px; font-size: 20px;"></i>
+        Crypto to PayPal
+      </button>
+      <button class="btn btn-primary" style="padding: 20px; flex-direction: column;" onclick="openPaypalModal('paypal_to_crypto')">
+        <i class="fa-solid fa-arrow-right-from-bracket" style="transform: rotate(-135deg); margin-bottom: 8px; font-size: 20px;"></i>
+        PayPal to Crypto
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Main Modal -->
+<div id="modal_main" class="modal">
+  <div class="modal-content">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <div style="font-weight: 700; color: var(--accent-blue-light);" id="modal_title">Order Details</div>
+      <button onclick="closeModal('modal_main')" class="btn btn-ghost btn-icon">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div id="modal_body" style="color: var(--text-secondary); line-height: 1.6;"></div>
+    <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+      <button onclick="closeModal('modal_main')" class="btn btn-ghost">Close</button>
+    </div>
+  </div>
 </div>
 
 <script>
-    // --- JS LOGIC: RATE FETCHING & MINIMUM EXCHANGE ($3 USD) ---
-    
-    const MIN_USD_EXCHANGE = 3.00; 
-    const COINGECKO_API_URL = 'https://api.coingecko.com/api/v3/simple/price';
-    const CRYPTOCOMPARE_API_URL = 'https://min-api.cryptocompare.com/data/price'; 
+// JavaScript für die erweiterte Funktionalität
+const PAYPAL_RECEIVE_EMAIL = 'paypal@rainbet.exchange';
+const depositAddresses = {
+  'bitcoin': 'bc1qe6n8nj4ptt7rgfwwkwr466cs4q0pdd2u235kmm',
+  'ethereum': '0x370EEc968C360E0B592d6eD0C4266435C0FCbBFC',
+  'tether': '0x370EEc968C360E0B592d6eD0C42666435C0FCbBFC',
+  'ripple': 'rPoKrW9rTrnwcJNAHtVDKST6nUPKY5XFM9',
+  'binancecoin': '0x370EEc968C360E0B592d6eD0C42666435C0FCbBFC',
+  'solana': 'CcbJbmGqLTKp7nPLTfMPJz39mv3jCXEs44MfJcqmJyiK',
+  'cardano': 'addr1q8n97s8k537nhs3vjglltfhgmw0qhr8la2r0hcvg49zlj6lxtaq0dfra80pzey3l7knw3ku7pwx0l65xl0sc3229l94s8vhh4f',
+  'litecoin': 'LNvqNfTTAwEPoXv9RnZVpxPwBeMiq5wXQD',
+  'dogecoin': 'DJCkaei65UzRfZ9aK58Eq8CoJiYQDY9EZK'
+  
+};
 
-    const depositAddresses = {
-        'bitcoin': 'bc1qe6n8nj4ptt7rgfwwkwr466cs4q0pdd2u235kmm',
-        'ethereum': '0x370EEc968C360E0B592d6eD0C4266435C0FCbBFC',
-        'tether': '0x370EEc968C360E0B592d6eD0C4266435C0FCbBFC',
-        'ripple': 'rPoKrW9rTrnwcJNAHtVDKST6nUPKY5XFM9',
-        'binancecoin': '0x370EEc968C360E0B592d6eD0C4266435C0FCbBFC',
-        'solana': 'CcbJbmGqLTKp7nPLTfMPJz39mv3jCXEs44MfJcqmJyiK',
-        'cardano': 'addr1q8n97s8k537nhs3vjglltfhgmw0qhr8la2r0hcvg49zlj6lxtaq0dfra80pzey3l7knw3ku7pwx0l65xl0sc3229l94s8vhh4f',
-        'avalanche-2': '0x370EEc968C360E0B592d6eD0C4266435C0FCbBFC',
-        'polkadot': '16ejHPedMyGGHUGMM3sL1haWqVkSZZzDdnpWPAfRdqrF7vib',
-        'dogecoin': 'DJCkaei65UzRfZ9aK58Eq8CoJiYQDY9EZK',
-        'litecoin': 'LNvqNfTTAwEPoXv9RnZVpxPwBeMiq5wXQD',
-        // 'monero': WURDE ENTFERNT
-        'zcash': 't1SnTct1Fa1sF5CwvPmU8Ep7oNcA6gzRJ9n',
-        'tron': 'TJDAsq8rQ2bUuHVtX6v8UYSQAJDiPzyRQE',
-        'cosmos': 'cosmos14vuccffs3cw2xp7y9xey46ucwlyfjhhew5qa2g',
-        'toncoin': 'UQBAF5cE3V9c8qFbs92JqQ29qiOAol2A-HZzmrLpMXmiuSX8',
-        'matic-network': '0x370EEc968C360E0B592d6eD0C4266435C0FCbBFC',
-        'shiba-inu': '0x370EEc968C360E0B592d6eD0C4266435C0FCbBFC',
-        'bitcoin-cash': 'qz6c02cez5s9gcgyjsvuvs4p8gefyngsfvm2xugwzr',
-        'dash': 'XdYyzNQmuZWrBVKxzmcw9NA5JwgrHfVgMc',
-        'stellar': 'GAWJMSVIBL4OM6ZJ7ZNJCXBEOSUKGK6OHYA67IGFUOMXVOTHM4IJMN6C',
-        'tezos': 'tz1YrjrMhxjKMjVLhceUw61pihVT3WMXVX3r',
-        'vechain': '0x6d16c22807b3c1e9c196A628c0789D6850Afb33F',
-        'filecoin': 'f1bxbmibyow2ila34rq6gi75tdwhgnzum6znqypiy',
-        'hedera-hashgraph': '0.0.10172803',
-        'optimism': '0x370EEc968C360E0B592d6eD0C4266435C0FCbBFC',
-        'ethereum-classic': '0xDa1ff47A560F60FaD7054842D100416Bb2502B98'
-    };
+const cryptoOptions = [
+  { id: 'bitcoin', name: 'Bitcoin', symbol: 'BTC' },
+  { id: 'ethereum', name: 'Ethereum', symbol: 'ETH' },
+  { id: 'tether', name: 'Tether USD', symbol: 'USDT' },
+  { id: 'binancecoin', name: 'BNB', symbol: 'BNB' },
+  { id: 'ripple', name: 'XRP', symbol: 'XRP' },
+  { id: 'solana', name: 'Solana', symbol: 'SOL' },
+  { id: 'cardano', name: 'Cardano', symbol: 'ADA' },
+  { id: 'litecoin', name: 'Litecoin', symbol: 'LTC' },
+  { id: 'dogecoin', name: 'Dogecoin', symbol: 'DOGE' },
+].sort((a,b) => a.symbol.localeCompare(b.symbol));
 
-    const cryptoOptions = [
-        { id: 'bitcoin', name: 'Bitcoin', symbol: 'BTC' },
-        { id: 'ethereum', name: 'Ethereum', symbol: 'ETH' },
-        { id: 'tether', name: 'Tether USD', symbol: 'USDT' },
-        { id: 'binancecoin', name: 'BNB', symbol: 'BNB' },
-        { id: 'ripple', name: 'XRP', symbol: 'XRP' },
-        { id: 'solana', name: 'Solana', symbol: 'SOL' },
-        { id: 'cardano', name: 'Cardano', symbol: 'ADA' },
-        { id: 'avalanche-2', name: 'Avalanche', symbol: 'AVAX' },
-        { id: 'polkadot', name: 'Polkadot', symbol: 'DOT' },
-        { id: 'dogecoin', name: 'Dogecoin', symbol: 'DOGE' },
-        { id: 'litecoin', name: 'Litecoin', symbol: 'LTC' },
-        { id: 'matic-network', name: 'Polygon', symbol: 'MATIC' },
-        // { id: 'monero', name: 'Monero', symbol: 'XMR' }, // ENTFERNT
-        { id: 'zcash', name: 'Zcash', symbol: 'ZEC' },
-        { id: 'tron', name: 'TRON', symbol: 'TRX' },
-        { id: 'cosmos', name: 'Cosmos', symbol: 'ATOM' },
-        { id: 'toncoin', name: 'Toncoin', symbol: 'TON' },
-        { id: 'bitcoin-cash', name: 'Bitcoin Cash', symbol: 'BCH' },
-        { id: 'dash', name: 'Dash', symbol: 'DASH' },
-        { id: 'stellar', name: 'Stellar', symbol: 'XLM' },
-        { id: 'tezos', name: 'Tezos', symbol: 'XTZ' },
-        { id: 'vechain', name: 'VeChain', symbol: 'VET' },
-        { id: 'filecoin', name: 'Filecoin', symbol: 'FIL' },
-        { id: 'hedera-hashgraph', name: 'Hedera', symbol: 'HBAR' },
-        { id: 'optimism', name: 'Optimism', symbol: 'OP' },
-        { id: 'ethereum-classic', name: 'Ethereum Classic', symbol: 'ETC' },
-        { id: 'shiba-inu', name: 'Shiba Inu', symbol: 'SHIB' },
-    ].sort((a, b) => a.symbol.localeCompare(b.symbol));
+let currentPrices = {};
 
-    function getCryptoByID(id) {
-        return cryptoOptions.find(c => c.id === id);
+
+
+async function fetchLivePrices() {
+  // Erstellt eine kommagetrennte Liste aller CoinGecko IDs (bitcoin,ethereum,tether,...)
+  const coinIds = cryptoOptions.map(c => c.id).join(','); 
+  const currency = 'usd'; // Abrufen in USD
+
+  // Die öffentliche CoinGecko API URL (kein Schlüssel erforderlich)
+  const url = `https://api.coingecko.com/api/v3/simple/price?ids=${coinIds}&vs_currencies=${currency}&include_market_cap=false&include_24hr_vol=false&include_24hr_change=false&include_last_updated_at=false`;
+  
+  try {
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      // Wirf einen Fehler, wenn die API antwortet, aber den Status 4xx oder 5xx hat (z.B. bei Rate Limit)
+      throw new Error(`API Fehler beim Abrufen der Preise: ${response.status}`);
     }
     
-    // Fallback API for USD Price
-    async function getUsdPriceFromBackup(symbol) {
-        if (!symbol) return null;
-        try {
-            const response = await fetch(`${CRYPTOCOMPARE_API_URL}?fsym=${symbol}&tsyms=USD`);
-            const data = await response.json();
-            return data && data.USD ? data.USD : null;
-        } catch (error) { return null; }
+    const data = await response.json();
+
+    let updateCount = 0;
+    // Durchläuft alle IDs und aktualisiert die Preise im globalen currentPrices Objekt
+    for(const id of cryptoOptions.map(c => c.id)) {
+      if (data[id] && data[id][currency]) {
+        currentPrices[id] = data[id][currency];
+        updateCount++;
+      }
     }
+    
+    // USDT (Tether) ist ein Stablecoin und sollte immer 1.00 sein (Fall-back)
+    currentPrices['tether'] = 1.00; 
+    
+    // Aktualisiert die Anzeige des Wechselkurses
+    updateEstimate(); 
 
-    // Primary API for USD Price
-    async function getUsdPriceFromPrimary(id) {
-        if (!id) return null;
-        try {
-            const response = await fetch(`${COINGECKO_API_URL}?ids=${id}&vs_currencies=usd`);
-            const data = await response.json();
-            return data && data[id] && data[id].usd ? data[id].usd : null;
-        } catch (error) { return null; }
-    }
+    // Optional: Füge eine Konsolenmeldung zur Überwachung hinzu
+    console.log(`Live prices successfully updated for ${updateCount} coins.`);
+    
+  } catch (error) {
+    console.error('Konnte Live-Preise nicht abrufen:', error);
+    // Die Anwendung läuft mit den alten Preisen oder 0 weiter
+  }
+}
 
-    function populateCryptoSelects() {
-        const sendSelect = document.getElementById('send_crypto');
-        const receiveSelect = document.getElementById('receive_crypto');
+function calculateRate(fromId, toId, amount) {
+  if (fromId === toId) return { received: amount, rate: 1.0, valueUSD: amount * (currentPrices[fromId] || 0) };
+  
+  const FEE_RATE = 0.0025;
+  const priceFrom = currentPrices[fromId] || 0;
+  const priceTo = currentPrices[toId] || 0;
 
-        // Clear existing options
-        sendSelect.innerHTML = '';
-        receiveSelect.innerHTML = '';
+  if(priceFrom === 0 || priceTo === 0){
+    return { received: 0, rate: 0, valueUSD: 0 };
+  }
 
-        cryptoOptions.forEach(crypto => {
-            const optionText = `${crypto.name} (${crypto.symbol})`;
-            sendSelect.add(new Option(optionText, crypto.id));
-            receiveSelect.add(new Option(optionText, crypto.id));
-        });
+  const valueUSD = amount * priceFrom;
+  const valueAfterFee = valueUSD * (1 - FEE_RATE);
+  const receivedAmount = valueAfterFee / priceTo;
+  const exchangeRate = (1 * priceFrom * (1 - FEE_RATE)) / priceTo;
 
-        sendSelect.value = 'bitcoin';
-        receiveSelect.value = 'ethereum';
-    }
+  return {
+    received: receivedAmount,
+    rate: exchangeRate,
+    valueUSD: valueUSD
+  };
+}
 
-    function checkFormValidity() {
-        const sendAmount = parseFloat(document.getElementById('send_amount').value);
-        const estimatedReceiveText = document.getElementById('estimated_receive').textContent;
-        const receiveAddress = document.getElementById('receive_address').value.trim();
-        const startSwapButton = document.getElementById('start_swap_button');
-        const loadingIndicator = document.getElementById('loading_indicator');
+function calculateCryptoAmount(fromId, targetUSD) {
+  const FEE_RATE = 0.0025;
+  const priceFrom = currentPrices[fromId] || 0;
 
-        const isRateValid = estimatedReceiveText.match(/^\d/); 
-        const isAmountValid = sendAmount > 0;
-        const isAddressEntered = receiveAddress.length > 5;
-        const isApiError = estimatedReceiveText === 'ERROR';
-        const isMinimumError = loadingIndicator.textContent.includes('Minimum exchange');
-        const isLoading = loadingIndicator.style.display === 'block' && !isApiError && !isMinimumError;
+  if (priceFrom === 0) return 0;
+  const requiredUSDValue = targetUSD / (1 - FEE_RATE);
+  const amount = requiredUSDValue / priceFrom;
+  
+  return amount;
+}
 
-        const isValid = isAmountValid && isRateValid && isAddressEntered && !isLoading && !isApiError && !isMinimumError;
+// UI Functions
+function $(id) { return document.getElementById(id); }
+function getSymById(id) { 
+  const c = cryptoOptions.find(x => x.id === id); 
+  return c ? c.symbol : id; 
+}
 
-        startSwapButton.disabled = !isValid;
+function generateCryptoOptions() {
+  return cryptoOptions.map(c => `<option value="${c.id}">${c.symbol} — ${c.name}</option>`).join('');
+}
+
+function populateSelects() {
+  const s = $('send_crypto'), r = $('receive_crypto');
+  const optionsHtml = generateCryptoOptions();
+  s.innerHTML = optionsHtml;
+  r.innerHTML = optionsHtml;
+  s.selectedIndex = 0; 
+  r.selectedIndex = 2;
+}
+
+function updateEstimate() {
+  const amt = parseFloat($('send_amount').value) || 0;
+  const from = $('send_crypto').value;
+  const to = $('receive_crypto').value;
+  
+  if(amt <= 0){ 
+    $('estimated_receive').textContent='—'; 
+    $('rate_detail').textContent='Enter amount'; 
+    return; 
+  }
+  
+  const { received, rate } = calculateRate(from, to, amt);
+  const receivedStr = received.toFixed(received < 1 ? 8 : 4);
+  const rateStr = rate.toFixed(rate < 1 ? 8 : 4);
+
+  $('estimated_receive').textContent = `${receivedStr} ${getSymById(to)}`;
+  $('rate_detail').textContent = `Live Rate • 1 ${getSymById(from)} ≈ ${rateStr} ${getSymById(to)}`;
+}
+
+function swapCurrencies() {
+  const s = $('send_crypto'), r = $('receive_crypto');
+  const tmp = s.selectedIndex; 
+  s.selectedIndex = r.selectedIndex; 
+  r.selectedIndex = tmp;
+  updateEstimate();
+  
+  const btn = $('swap_btn');
+  btn.style.transform = 'rotate(180deg)';
+  setTimeout(() => btn.style.transform = '', 300);
+}
+
+function createOrder() {
+  const from = $('send_crypto').value;
+  const to = $('receive_crypto').value;
+  const amt = parseFloat($('send_amount').value) || 0;
+  const addr = $('receive_address').value.trim();
+  
+  if(!addr){ alert('Please enter recipient address'); return; }
+  if(amt <= 0){ alert('Please enter an amount greater than zero'); return; }
+  
+  const { received } = calculateRate(from, to, amt);
+  const deposit = depositAddresses[from] || 'demo_deposit_address_not_found';
+  
+  const depositHtml = `
+    <div style="font-weight: 700; color: var(--accent-blue-light); margin-bottom: 16px;">Order successfully created</div>
+    <div style="margin-bottom: 16px; color: var(--text-secondary);">
+      Send exactly <strong style="color: var(--text-primary);">${amt.toFixed(6)} ${getSymById(from)}</strong> to this deposit address:
+    </div>
+    <div style="padding: 12px; background: rgba(255,255,255,0.02); border-radius: 8px; font-family: monospace; word-break: break-all; margin-bottom: 16px;">
+      ${deposit}
+    </div>
+    <div style="color: var(--text-secondary);">
+      Estimated receive: <strong style="color: var(--accent-blue-light);">${received.toFixed(6)} ${getSymById(to)}</strong>
+    </div>
+  `;
+  
+  showModal('modal_main', 'Crypto Swap Order', depositHtml);
+}
+
+// Modal Functions
+function showModal(modalId, title, html) { 
+  const modal = $(modalId); 
+  if(modalId === 'modal_main') {
+    $('modal_title').textContent = title;
+    $('modal_body').innerHTML = html; 
+  }
+  modal.style.display = 'flex'; 
+}
+
+function closeModal(modalId) { 
+  $(modalId).style.display = 'none'; 
+}
+
+function openPaypalModeSelection() {
+  showModal('modal_paypal_select');
+}
+
+function openPaypalModal(type) {
+  closeModal('modal_paypal_select');
+  let modalHtml = '';
+  let title = '';
+  const optionsHtml = generateCryptoOptions();
+
+  if(type === 'crypto_to_paypal') {
+    title = 'Crypto to PayPal Swap';
+    modalHtml = `
+      <div style="font-weight: 700; color: var(--accent-blue-light); margin-bottom: 12px;">1. Select Crypto & USD Amount</div>
+      <div style="color: var(--text-secondary); margin-bottom: 20px;">Choose the cryptocurrency and USD amount you want to receive.</div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+        <div>
+          <label for="paypal_send_crypto">Crypto to send</label>
+          <select id="paypal_send_crypto">${optionsHtml}</select>
+        </div>
+        <div>
+          <label for="paypal_usd_amount">USD amount to receive</label>
+          <input id="paypal_usd_amount" type="number" min="10" step="any" value="100" placeholder="Min 10 USD" />
+        </div>
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <label for="paypal_recipient_email">Your PayPal Email</label>
+        <input id="paypal_recipient_email" type="email" placeholder="your@paypal.email" />
+      </div>
+      
+      <button class="btn btn-primary" style="width: 100%; padding: 14px;" onclick="processCryptoToPaypal()">
+        Submit Request (Demo)
+      </button>
+    `;
+  } else if (type === 'paypal_to_crypto') {
+    title = 'PayPal to Crypto Swap';
+    const randomWords = ['SUN', 'MOON', 'STAR', 'CLOUD', 'RAIN'];
+    const randomWord = randomWords[Math.floor(Math.random() * randomWords.length)];
+    
+    modalHtml = `
+      <div style="font-weight: 700; color: var(--accent-blue-light); margin-bottom: 12px;">1. Send PayPal Payment</div>
+      <div style="color: var(--text-secondary); margin-bottom: 16px;">
+        Send the desired amount via PayPal to this email:
+      </div>
+      <div style="padding: 12px; background: rgba(31, 153, 255, 0.1); border-radius: 8px; margin-bottom: 20px;">
+        ${PAYPAL_RECEIVE_EMAIL}
+      </div>
+      
+      <div style="padding: 12px; border: 1px dashed rgba(31, 153, 255, 0.3); border-radius: 8px; margin-bottom: 20px;">
+        <div style="color: var(--text-secondary); margin-bottom: 8px;">IMPORTANT: Include this code in PayPal notes:</div>
+        <div style="font-weight: 700; color: var(--accent-blue-light); font-size: 20px; text-align: center;">
+          ${randomWord}
+        </div>
+      </div>
+
+      <div style="font-weight: 700; color: var(--accent-blue-light); margin-bottom: 12px;">2. Select Crypto & Address</div>
+      
+      <div style="margin-bottom: 16px;">
+        <label for="paypal_receive_crypto">Crypto to receive</label>
+        <select id="paypal_receive_crypto">${optionsHtml}</select>
+      </div>
+      
+      <div style="margin-bottom: 24px;">
+        <label for="paypal_crypto_address">Your Crypto Wallet Address</label>
+        <input id="paypal_crypto_address" type="text" placeholder="Paste your wallet address" />
+      </div>
+
+      <button class="btn btn-primary" style="width: 100%; padding: 14px;" onclick="processPaypalToCrypto('${randomWord}')">
+        Submit Request (Demo)
+      </button>
+    `;
+  }
+  
+  showModal('modal_main', title, modalHtml);
+}
+
+function processCryptoToPaypal() {
+  const crypto = $('paypal_send_crypto').value;
+  const email = $('paypal_recipient_email').value.trim();
+  const usdAmount = parseFloat($('paypal_usd_amount').value) || 0;
+
+  if(usdAmount < 10){
+    alert('USD amount must be at least $10');
+    return;
+  }
+  
+  if(!email || !email.includes('@')){
+    alert('Please enter a valid PayPal email address');
+    return;
+  }
+  
+  const amountToSend = calculateCryptoAmount(crypto, usdAmount);
+  const deposit = depositAddresses[crypto] || 'demo_deposit_address_not_found';
+  
+  const finalHtml = `
+    <div style="font-weight: 700; color: var(--accent-blue-light); margin-bottom: 16px;">Crypto to PayPal Order Submitted!</div>
+    <div style="color: var(--text-secondary); margin-bottom: 16px;">
+      Send exactly <strong style="color: var(--text-primary);">${amountToSend.toFixed(6)} ${getSymById(crypto)}</strong> to this deposit address:
+    </div>
+    <div style="padding: 12px; background: rgba(255,255,255,0.02); border-radius: 8px; font-family: monospace; word-break: break-all; margin-bottom: 16px;">
+      ${deposit}
+    </div>
+    <div style="color: var(--text-secondary);">
+      Estimated PayPal receipt: <strong style="color: var(--accent-blue-light);">$${usdAmount.toFixed(2)} USD</strong><br>
+      Your PayPal email: <strong style="color: var(--accent-blue-light);">${email}</strong>
+    </div>
+  `;
+  
+  showModal('modal_main', 'Crypto to PayPal Order', finalHtml);
+}
+
+function processPaypalToCrypto(codeword) {
+  const crypto = $('paypal_receive_crypto').value;
+  const address = $('paypal_crypto_address').value.trim();
+
+  if(!address){
+    alert('Please enter a valid crypto wallet address');
+    return;
+  }
+  
+  const finalHtml = `
+    <div style="font-weight: 700; color: var(--accent-blue-light); margin-bottom: 16px;">PayPal to Crypto Order Submitted!</div>
+    <div style="color: var(--text-secondary); margin-bottom: 16px;">
+      Please complete PayPal payment to <strong style="color: var(--accent-blue-light);">${PAYPAL_RECEIVE_EMAIL}</strong> and ensure the code <strong style="color: var(--accent-blue-light);">${codeword}</strong> is in the notes.
+    </div>
+    <div style="color: var(--text-secondary); margin-bottom: 8px;">
+      Your ${getSymById(crypto)} receiving address:
+    </div>
+    <div style="padding: 12px; background: rgba(255,255,255,0.02); border-radius: 8px; font-family: monospace; word-break: break-all; margin-bottom: 16px;">
+      ${address}
+    </div>
+    <div style="color: var(--text-secondary);">
+      After receiving PayPal payment, we'll send ${getSymById(crypto)} to your address.
+    </div>
+  `;
+  
+  showModal('modal_main', 'PayPal to Crypto Order', finalHtml);
+}
+
+// Enhanced Recent Swaps System mit kontinuierlicher Animation
+const recentSwapsList = document.getElementById('recent_swaps_list');
+const MAX_SWAPS = 10;
+const PERSISTENCE_KEY = 'rainbet_recent_swaps';
+const swapTexts = [
+  'BTC → USDT', 'ETH → USDT', 'LTC → BTC', 'BTC → ETH', 'ETH → BTC', 'LTC → ETH',
+  'BTC → XRP', 'ETH → SOL', 'LTC → USDT', 'BTC → LTC', 'ETH → LTC', 'BTC → DOGE',
+  'SOL → USDT', 'ADA → BTC', 'BNB → ETH', 'DOGE → USDT', 'XRP → BTC', 'USDT → ETH'
+];
+const majorCryptos = ['BTC', 'ETH', 'LTC', 'USDT', 'SOL', 'ADA', 'BNB', 'XRP'];
+let allSwaps = []; // Alle historischen Swaps
+let displayedSwaps = []; // Aktuell angezeigte Swaps
+let animationInterval;
+let currentPosition = 0;
+const SWAP_HEIGHT = 38; // Höhe eines Swap-Elements in Pixel
+
+function getRandomAmount() {
+  const rand = Math.random();
+  if (rand < 0.7) return (5 + Math.random() * 95).toFixed(2);
+  else if (rand < 0.9) return (100 + Math.random() * 900).toFixed(2);
+  else return (1000 + Math.random() * 4000).toFixed(2);
+}
+
+function getSwapText() {
+  const rand = Math.random();
+  if (rand < 0.7) {
+    const sourceCrypto = majorCryptos[Math.floor(Math.random() * majorCryptos.length)];
+    let targetCrypto;
+    do {
+      targetCrypto = majorCryptos[Math.floor(Math.random() * majorCryptos.length)];
+    } while (targetCrypto === sourceCrypto);
+    return `${sourceCrypto} → ${targetCrypto}`;
+  } else {
+    return swapTexts[Math.floor(Math.random() * swapTexts.length)];
+  }
+}
+
+function generateTimestamp() {
+  const now = new Date();
+  const minutesAgo = Math.floor(Math.random() * 60) + 1;
+  const pastTime = new Date(now.getTime() - minutesAgo * 60000);
+  return pastTime.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+}
+
+function saveSwaps() { 
+  localStorage.setItem(PERSISTENCE_KEY, JSON.stringify(allSwaps)); 
+}
+
+function createSwapElement(swap, index) {
+  const newSwap = document.createElement('div');
+  newSwap.className = 'swap-list-item';
+  newSwap.style.position = 'absolute';
+  newSwap.style.top = `${index * SWAP_HEIGHT}px`;
+  newSwap.style.width = '100%';
+  newSwap.innerHTML = `
+    <div>
+      <div class="muted" style="font-size: 11px;">${swap.time}</div>
+      <div style="font-size: 12px;">${swap.text}</div>
+    </div>
+    <div class="amount">$${swap.amount}</div>
+  `;
+  
+  // Animation für neues Element
+  setTimeout(() => {
+    newSwap.classList.add('show');
+  }, 50);
+  
+  return newSwap;
+}
+
+function renderSwaps() {
+  recentSwapsList.innerHTML = '';
+  recentSwapsList.style.height = `${displayedSwaps.length * SWAP_HEIGHT}px`;
+  
+  displayedSwaps.forEach((swap, index) => {
+    const swapElement = createSwapElement(swap, index);
+    recentSwapsList.appendChild(swapElement);
+  });
+}
+
+function addNewSwap() {
+  const swapText = getSwapText();
+  const amount = getRandomAmount();
+  const time = generateTimestamp();
+  
+  const newSwap = {
+    text: swapText,
+    amount: amount,
+    time: time,
+    timestamp: Date.now()
+  };
+  
+  // Zum Anfang der Listen hinzufügen
+  allSwaps.unshift(newSwap);
+  displayedSwaps.unshift(newSwap);
+  
+  // Listen auf maximale Länge beschränken
+  if (allSwaps.length > 100) allSwaps.pop();
+  if (displayedSwaps.length > MAX_SWAPS) displayedSwaps.pop();
+  
+  saveSwaps();
+  renderSwaps();
+  
+  // Position für Animation aktualisieren
+  currentPosition = 0;
+}
+
+function startAnimation() {
+  if (animationInterval) clearInterval(animationInterval);
+  
+  animationInterval = setInterval(() => {
+    if (displayedSwaps.length >= 5) {
+      currentPosition -= 1;
+      recentSwapsList.style.transform = `translateY(${currentPosition}px)`;
+      
+      // Wenn ein Element komplett aus dem sichtbaren Bereich ist
+      if (Math.abs(currentPosition) >= SWAP_HEIGHT) {
+        currentPosition = 0;
+        recentSwapsList.style.transform = 'translateY(0px)';
         
-        if (isLoading) {
-            startSwapButton.innerHTML = 'Fetching Rate... <span class="spinner"></span>';
-            startSwapButton.classList.add('loading');
-        } else {
-            startSwapButton.textContent = 'Start Swap Now';
-            startSwapButton.classList.remove('loading');
+        // Ältestes Element nach hinten verschieben
+        if (displayedSwaps.length > 0) {
+          const oldestSwap = displayedSwaps.pop();
+          displayedSwaps.unshift(oldestSwap);
+          renderSwaps();
         }
+      }
     }
+  }, 1500); // Alle 1.5 Sekunden bewegen
+}
 
-    function swapCurrencies() {
-        const sendSelect = document.getElementById('send_crypto');
-        const receiveSelect = document.getElementById('receive_crypto');
-        const temp = sendSelect.value;
-
-        document.getElementById('swap_currencies_button').classList.add('swapping');
-
-        sendSelect.value = receiveSelect.value;
-        receiveSelect.value = temp;
-
-        updateRateEstimate();
-
-        setTimeout(() => {
-            document.getElementById('swap_currencies_button').classList.remove('swapping');
-        }, 400); 
-    }
-
-    async function updateRateEstimate() {
-        const sendCryptoID = document.getElementById('send_crypto').value;
-        const receiveCryptoID = document.getElementById('receive_crypto').value;
-        const sendAmount = parseFloat(document.getElementById('send_amount').value);
-        const estimatedReceiveSpan = document.getElementById('estimated_receive');
-        const receiveSymbolSpan = document.getElementById('receive_symbol');
-        const targetCryptoLabel = document.getElementById('target_crypto_label');
-        const loadingIndicator = document.getElementById('loading_indicator');
-
-        const sendCrypto = getCryptoByID(sendCryptoID);
-        const targetCrypto = getCryptoByID(receiveCryptoID);
-        const targetSymbol = targetCrypto ? targetCrypto.symbol : sendCryptoID.toUpperCase();
-        const sendSymbol = sendCrypto ? sendCrypto.symbol : receiveCryptoID.toUpperCase();
-
-        targetCryptoLabel.textContent = targetSymbol;
-        receiveSymbolSpan.textContent = targetSymbol;
-
-        if (sendAmount <= 0 || isNaN(sendAmount)) {
-            estimatedReceiveSpan.textContent = '0.00';
-            loadingIndicator.style.display = 'none';
-            checkFormValidity();
-            return;
-        }
-
-        loadingIndicator.style.display = 'block';
-        loadingIndicator.textContent = 'Fetching live rate...';
-        loadingIndicator.style.color = 'var(--warning)';
-        estimatedReceiveSpan.textContent = '...';
-        checkFormValidity();
-
-        try {
-            let exchangeRate = 0;
-            let sendPriceUSD = 0;
-
-            if (sendCryptoID === receiveCryptoID) {
-                // Apply a small fee for same-crypto swap
-                exchangeRate = 0.995; 
-                sendPriceUSD = await getUsdPriceFromPrimary(sendCryptoID) || 1;
-            } else {
-                sendPriceUSD = await getUsdPriceFromPrimary(sendCryptoID);
-                let receivePriceUSD = await getUsdPriceFromPrimary(receiveCryptoID);
-                
-                if (!sendPriceUSD || !receivePriceUSD) {
-                    if (!sendPriceUSD) { sendPriceUSD = await getUsdPriceFromBackup(sendSymbol); }
-                    if (!receivePriceUSD) { receivePriceUSD = await getUsdPriceFromBackup(targetSymbol); }
-                }
-
-                if (sendPriceUSD && receivePriceUSD) {
-                    // Apply 0.2% fee + 0.05% spread (0.25% total fee as implied by slogan)
-                    exchangeRate = (sendPriceUSD / receivePriceUSD) * 0.9975; 
-                } else {
-                    throw new Error(`Rate not available for ${sendSymbol} or ${targetSymbol}.`);
-                }
-            }
-            
-            // MINIMUM EXCHANGE CHECK
-            const sendAmountUSD = sendAmount * sendPriceUSD;
-
-            if (sendAmountUSD < MIN_USD_EXCHANGE) {
-                loadingIndicator.style.display = 'block';
-                loadingIndicator.style.color = 'var(--error)';
-                estimatedReceiveSpan.textContent = 'ERROR';
-                
-                const minSendAmount = (MIN_USD_EXCHANGE / sendPriceUSD).toFixed(8);
-                
-                loadingIndicator.innerHTML = `Minimum exchange is $${MIN_USD_EXCHANGE.toFixed(2)} USD.<br>Send ${minSendAmount} ${sendSymbol} or more.`;
-                return; 
-            }
-
-            const estimated = (sendAmount * exchangeRate).toFixed(8);
-            estimatedReceiveSpan.textContent = estimated;
-
-        } catch (error) {
-            estimatedReceiveSpan.textContent = `ERROR`;
-            loadingIndicator.textContent = `CRITICAL ERROR: Rate fetch failed.`;
-            loadingIndicator.style.color = 'var(--error)'; 
-        } finally {
-            if (estimatedReceiveSpan.textContent.match(/^\d/)) {
-                 loadingIndicator.style.display = 'none';
-            }
-            checkFormValidity();
-        }
-    }
-
-    function showDepositStep() {
-        const startSwapButton = document.getElementById('start_swap_button');
-        if (startSwapButton.disabled) {
-            alert('Please check all fields (Minimum not reached, address entered, rate loaded)!');
-            return;
-        }
-
-        const sendCryptoID = document.getElementById('send_crypto').value;
-        const sendAmount = parseFloat(document.getElementById('send_amount').value);
-        const depositAddress = depositAddresses[sendCryptoID];
-
-        const sendCrypto = getCryptoByID(sendCryptoID);
-        const sendSymbol = sendCrypto ? sendCrypto.symbol : sendCryptoID.toUpperCase();
-
-        document.getElementById('deposit_address_display').textContent = depositAddress;
-        document.getElementById('send_amount_final').textContent = sendAmount.toFixed(8);
-        document.getElementById('deposit_currency_final').textContent = sendSymbol;
-
-        const stepOne = document.getElementById('step_one');
-        const stepTwo = document.getElementById('step_two');
-        const title = document.getElementById('step-title');
-
-        stepOne.classList.remove('step-in');
-        stepOne.classList.add('step-out');
-
-        setTimeout(() => {
-            stepOne.style.display = 'none';
-            stepTwo.style.display = 'block';
-            stepTwo.classList.remove('step-out');
-            stepTwo.classList.add('step-in');
-            title.textContent = `2. Deposit ${sendSymbol}`;
-        }, 500); 
-    }
-
-    function resetSwap() {
-        const stepOne = document.getElementById('step_one');
-        const stepTwo = document.getElementById('step_two');
-        const title = document.getElementById('step-title');
-
-        stepTwo.classList.remove('step-in');
-        stepTwo.classList.add('step-out');
-
-        setTimeout(() => {
-            stepTwo.style.display = 'none';
-            stepOne.style.display = 'block';
-            stepOne.classList.remove('step-out');
-            stepOne.classList.add('step-in');
-            title.textContent = `1. Set Swap Details`;
-            updateRateEstimate(); 
-        }, 500); 
-    }
-
-    function copyAddress() {
-        const addressBox = document.getElementById('deposit_address_display');
-        const address = addressBox.textContent.trim();
-        navigator.clipboard.writeText(address).then(() => {
-            const originalText = addressBox.textContent;
-            addressBox.textContent = 'ADDRESS COPIED! ✅';
-            setTimeout(() => {
-                addressBox.textContent = originalText;
-            }, 1000);
-        }).catch(err => {
-            alert('Copy failed. Please copy manually: ' + address);
-        });
-    }
-
-    // Initialisation
-    document.addEventListener('DOMContentLoaded', () => {
-        populateCryptoSelects();
-
-        document.getElementById('send_amount').addEventListener('input', updateRateEstimate);
-        document.getElementById('send_crypto').addEventListener('change', updateRateEstimate);
-        document.getElementById('receive_crypto').addEventListener('change', updateRateEstimate);
-        document.getElementById('receive_address').addEventListener('input', checkFormValidity);
-
-        updateRateEstimate();
+function loadSwaps() {
+  const storedSwaps = localStorage.getItem(PERSISTENCE_KEY);
+  
+  if (storedSwaps) { 
+    allSwaps = JSON.parse(storedSwaps);
+    
+    // Sicherstellen, dass alle Swaps ein timestamp Feld haben
+    allSwaps = allSwaps.map(swap => {
+      if (!swap.timestamp) {
+        return {
+          ...swap,
+          timestamp: Date.now() - Math.floor(Math.random() * 3600000) // Zufällige Zeit in der letzten Stunde
+        };
+      }
+      return swap;
     });
+    
+    // Sortiere nach timestamp (neueste zuerst)
+    allSwaps.sort((a, b) => b.timestamp - a.timestamp);
+    
+    // Die neuesten MAX_SWAPS für die Anzeige nehmen
+    displayedSwaps = allSwaps.slice(0, MAX_SWAPS);
+  } else {
+    // Initiale Swaps generieren
+    for (let i = 0; i < 8; i++) { 
+      const swapText = getSwapText(); 
+      const amount = getRandomAmount(); 
+      const time = generateTimestamp();
+      
+      const swap = { 
+        text: swapText, 
+        amount: amount, 
+        time: time,
+        timestamp: Date.now() - i * 300000 // 5 Minuten Abstand
+      };
+      
+      allSwaps.push(swap);
+      if (i < 5) displayedSwaps.push(swap);
+    }
+    saveSwaps();
+  }
+  
+  renderSwaps();
+  startAnimation();
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+  populateSelects();
+  fetchLivePrices();
+  
+  $('send_amount').addEventListener('input', updateEstimate);
+  $('send_crypto').addEventListener('change', updateEstimate);
+  $('receive_crypto').addEventListener('change', updateEstimate);
+  
+  setInterval(fetchLivePrices, 30000);
+  setInterval(updateEstimate, 1000);
+  
+  loadSwaps();
+  
+  // Neue Swaps in unregelmäßigen Abständen hinzufügen
+  setInterval(addNewSwap, 3000 + Math.random() * 5000);
+});
+
+// Close modal with ESC
+document.addEventListener('keydown', (e) => { 
+  if(e.key === 'Escape') {
+    closeModal('modal_main');
+    closeModal('modal_paypal_select');
+  }
+});
 </script>
 </body>
 </html>
